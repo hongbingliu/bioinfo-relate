@@ -6,7 +6,7 @@ def get_option():
 	output_file = ""
 	f = ""
 	l = ""
-	h = ""#"useages:\n-i : inputfile\n-o : outputfile\n-f : the forward base number you trim\n-l : the last base number you trim "
+	h = ""
 	for op, value in opts:
 		if op == "-i":
 			input_file = value
@@ -35,7 +35,6 @@ def main(input_file,output_file,f,l):
 
 if __name__ == "__main__":
 	input_file,output_file,f,l,h = get_option()
-	#input_file = input(":")
 	if str(h) == "":
 		out = main(input_file,output_file,f,l)
 	else:
