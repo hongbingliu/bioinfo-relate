@@ -6,7 +6,7 @@ Calculate the Q20 value.
 ### N50_calculate.py
 Calculate the N50 value of cluster genes or transcripts.
 ### fq_cut.py
-Capture the reads from <f> to <l>.
+Capture the reads from *<f>* to *<l>*.
 ### fq_rm_N.py
 Remove the reads contain "N".
 ### fq_Q20_fliter.py
