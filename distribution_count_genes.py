@@ -14,15 +14,17 @@ def get_option():
 		elif op == "-o":
 			output_file = value
 		elif op == "-h":
-			h = "useages:showing the distribution of transcripts.\n-i : inputfile\n-o : outputfile(without this command, the result will output the screen)\n"
+			h = "useages:showing the distribution of genes.(used *.genes_lengths.txt)\n-i : inputfile\n-o : outputfile(without this command, the result will output the screen)\n"
 	return input_file,output_file,h
 
 def main(input_file):
 	d1 = d2 = d3 = d4 = d5 = d6 = d7 = d8 = d9 = d10 = d11 = d12 = d13 = d14 = d15 = d16 = d17 = d18 = d19 = d20 = d21 = d22 = d23 = d24 = d25 = d26 = d27 = d28 = d29 = 0
 	with open(input_file) as f:
 		for i in f:
-			if re.findall('len=\d+',str(i)):
-				s = (''.join(re.findall('len=\d+',str(i)))[4:])
+				try:
+					s = float(i.split("\t")[1])
+				except:
+					continue
 				#print (s)
 				if int(s) < 300:
 					d1 +=1

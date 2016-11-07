@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys, getopt
 import re
 import time
@@ -32,7 +34,7 @@ def main(input_file,output_file):
 					if int(ord(each) - 33) <= 20:
 						n += 1
 						if n > num:
-							print (i)
+							#print (i)
 							all = []
 							break
 				fout.write(''.join(all))
