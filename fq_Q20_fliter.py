@@ -15,7 +15,7 @@ def get_option():
 		elif op == "-o":
 			output_file = value
 		elif op == "-h":
-			h = 'useages:\nremove the sequence whose Q20 proportion low than 10% "N"\n-i : inputfile\n-o : outputfile\n'
+			h = 'useages:\nremove the sequence whose Q20 proportion low than 90% "N"\n-i : inputfile\n-o : outputfile\n'
 	return input_file,output_file,h
 
 def main(input_file,output_file):
