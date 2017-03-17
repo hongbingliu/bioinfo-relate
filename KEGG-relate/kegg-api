@@ -1,0 +1,186 @@
+#!/usr/bin/python
+
+import pandas as pd
+import sys, getopt
+import re
+import time
+import os
+
+def get_option():
+	opts, args = getopt.getopt(sys.argv[1:], "hi:f:o:x:y:")
+	input_file_L = ""
+	input_file_R = ""
+	output_file = ""
+	x = ""
+	y = ""
+	h = ""
+	for op, value in opts:
+		if op == "-i":
+			input_file_L = value
+		elif op == "-f":
+			input_file_R = value
+		elif op == "-x":
+			x = value
+		elif op == "-y":
+			y = value
+		elif op == "-o":
+			output_file = value
+		elif op == "-h":
+			h = "useages:\nKEGG annotation script:\n\tuse the build_dict() to build the KEGG dict for next parse\n\t-i : inputfile(KO list)\n\t-f : inputfile(KEGG dict)\n\t-x : more detail about which pathway\n\t-y : <int> the grade pathway in \n\t-o : outputfile"
+	return input_file_L,input_file_R,x,y,output_file,h
+
+def build_dict(input_file_L):
+	dict_a = {}
+	dict_b = {}
+	dict_c = {}
+	dict_d = {}
+	with open(input_file_L) as f:
+		for i in f:
+			if i[0] == 'D':
+				i = i.split('  ')
+				num = i[3]
+				d = i[4][:-1]
+				dict_a[num] = a if num not in dict_a.keys() else (dict_a[num] + '|' + a)
+				dict_b[num] = b if num not in dict_b.keys() else (dict_b[num] + '|' + b)
+				dict_c[num] = c if num not in dict_c.keys() else (dict_c[num] + '|' + c)
+				dict_d[num] = d if num not in dict_d.keys() else (dict_d[num] + '|' + d)
+			elif i[0] == 'C':
+				c = i[5:-1]
+			elif i[:2] == 'B ':
+				b = i[i.find('>') + 1:-5]
+			elif i[0] == 'A':
+				a = i[i.find('>') + 1:-5]
+	return dict_a, dict_b, dict_c, dict_d
+
+def read_dict(input_file_L,input_file_R,output_file):
+	fh = open(input_file_R, 'r')
+	d = fh.read().split('\n')
+	d1 = eval(d[0])
+	d2 = eval(d[1])
+	d3 = eval(d[2])
+	d4 = eval(d[3])
+
+	fw = open(output_file, 'w')
+	with open(input_file_L) as f :
+		for i in f:
+				ii = i[:-1]
+				A = d1.get(ii)
+				B = d2.get(ii)
+				C = d3.get(ii)
+				D = d4.get(ii)
+				if A:
+					fw.write(ii + "\t" + str(A) + "\t" + str(B) + "\t" + str(C) + "\t" + str(D) + "\n")
+	fw.close()
+			
+def apd(a, b):
+	if '|' in a:
+		each = set(a.split('|'))
+		for it in each:
+			b.append(it)
+	else:   
+			b.append(a)
+def cot(t1,out):
+	f = open(out, 'w')
+	s1 = set(t1)
+	
+	for item in s1:
+		f.write ( item + "\t" + str(t1.count(item)) + "\n")
+	f.close()
+
+def parse_results(output_file):
+	t1 = []
+	t2 = []
+	t3 = []
+	t4 = []
+	
+	with open(output_file) as f:
+		for i in f:
+				i = i[:-1]
+				i = i.split('\t')
+				apd(i[1], t1)
+				apd(i[2], t2)
+				apd(i[3], t3)
+				apd(i[4], t4)
+	#print (t3)
+	cot(t1, output_file + '.count1')
+	cot(t2, output_file + '.count2')
+	cot(t3, output_file + '.count3')
+#	cot(t4, output_file + '.count4')
+	
+	os.popen('sort -nrk 2 -t "\t" ' + output_file + '.count1 >' + output_file + '.c1')
+	os.popen('sort -nrk 2 -t "\t" ' + output_file + '.count2 >' + output_file + '.c2')
+	os.popen('sort -nrk 2 -t "\t" ' + output_file + '.count3 >' + output_file + '.c3')
+	os.popen('rm ' + output_file + '.count1 ' + output_file + '.count2 ' + output_file + '.count3')
+
+def tag_sort(tag,tag_all):
+	if tag[1] not in tag_all.keys():
+		tag_all[tag[1]] = 1
+	else:
+		tag_all[tag[1]] += 1
+	return tag_all
+
+def tail(output_file, x, y):
+	all = []
+	with open(output_file) as ff:
+		for i in ff:
+			tmp = []
+			i = i[:-1].split('\t')
+			if '|' in i[y]:
+				ii = i[y].split('|')
+				for e in range(len(ii)):	
+					if ii[e] == x and (i[0] + "\t" + i[y+1].split('|')[e]) not in tmp:
+						tmp.append(i[0] + "\t" + i[y+1].split('|')[e])
+				for d in tmp:
+					all.append(d)
+						
+			else:
+				if i[y] == x: #and (i[0] + "\t" + i[y+1]) not in all:
+					all.append(i[0] + "\t" + i[y+1])
+#	print (all)
+	tag_m = []
+	fb = ''
+	for u in all:
+#		print (u)
+		u = u.split('\t')
+		tag_m.append(u[1])
+	
+	s1 = set(tag_m)
+	for item in s1:
+		fb = fb + item + "\t" + str(tag_m.count(item)) + "\t"
+		fi = ''
+		for ib in all:
+			ib = ib.split('\t')
+			if ib[1] == item and ib[0] not in fi:
+				fi = fi + ib[0] + ";"
+				#print (fi)
+		fb = fb + fi[:-1] + "\n"
+	
+	fo = open(output_file + ".tmp", 'w')
+	fo.write (fb) 
+	os.popen('sort -nrk 2 -t "\t" ' + output_file + '.tmp >' + output_file + '.' + x.replace(' ', '-'))
+	
+		
+		
+	
+	
+if __name__ == "__main__":
+
+	input_file_L,input_file_R,x,y,output_file,h = get_option()
+	if h == "":
+##############################################################################
+#		dict_a, dict_b, dict_c, dict_d = build_dict(input_file_L)    #
+#		print (dict_a)                                               #
+#		print (dict_b)                                               #
+#		print (dict_c)                                               #
+#		print (dict_d)                                               #
+##############################################################################
+
+		time_start = time.time()
+		print (input_file_L,input_file_R,output_file,h)
+		read_dict(input_file_L,input_file_R,output_file)
+		parse_results(output_file)
+		if x != '':
+			tail(output_file,x,int(y))
+	else:
+		print (h)
+
